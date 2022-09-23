@@ -1,0 +1,11 @@
+{
+  "repoType": "github",
+  "repoDetails": {
+    "login": "arisarcmarket",
+    "repo": "Aristest",
+    "branch": "master"
+  },
+  "name": "ARIBBLE",
+  "description": "",
+  "version": "1.0.0"
+}
