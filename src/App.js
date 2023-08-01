@@ -42,7 +42,7 @@ function App() {
 
   return (
     <main>
-    <h1>Chat bot ai </h1>
+    <h1>ARC-ChatBot </h1>
 
     <section>
       {chats && chats.length
