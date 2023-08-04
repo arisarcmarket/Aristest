@@ -45,6 +45,16 @@
   border: 1px solid rgb(68, 68, 73) !important;
   border-radius: 24px;
   line-height: 5px;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+ 
+  &::-webkit-scrollbar-thumb {
+    
+      box-shadow: #858282;
+    
+    border-radius: 5px;
+  }
   
 }
 .chat-popup {
