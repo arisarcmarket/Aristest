@@ -1,27 +1,12 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
-import {
-  Breadcrumb,
-  Button,
-  Layout,
-  Menu,
-  Tooltip,
-  theme,
-  List,
-  Avatar,
-  Skeleton,
-  Card,
-  Typography,
-} from "antd";
-import {
-  ClearOutlined,
-  SendOutlined,
-  EditOutlined,
-  SaveOutlined,
-} from "@ant-design/icons";
+import { Breadcrumb, Button, Layout, Menu, Tooltip, theme, List, Avatar, Skeleton, Card, Typography, Space, Row, Col, Table } from "antd";
+import { ClearOutlined, SendOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
 import logo from "./reactor.svg";
+import logoArc from './logo.png';
 import axios from "axios";
-import Paragraph from "antd/es/skeleton/Paragraph";
+
+import TextArea from "antd/es/input/TextArea";
 const { Header, Content, Footer } = Layout;
 
 const url = "https://staging-api.arc.market/ws/v2/";
@@ -29,7 +14,7 @@ const url = "https://staging-api.arc.market/ws/v2/";
 const contentStyle: React.CSSProperties = {
   textAlign: "center",
   minHeight: 120,
-  lineHeight: "120px",
+  // lineHeight: "120px",
   color: "#fff",
   background: "transparent",
   padding: "30px",
@@ -40,6 +25,14 @@ const postMessage = async (message: string, id: string) => {
   const response = await axios.post(`${url}ai/chat`, {
     id: id ?? null,
     textPrompt: message,
+  });
+  return response.data;
+};
+
+const saveTune = async (input_text: string, output_text: string) => {
+  const response = await axios.post(`${url}ai/chat/save`, {
+    inputText: input_text.trim(),
+    outputText: output_text.trim(),
   });
   return response.data;
 };
@@ -71,8 +64,19 @@ const App: React.FC = () => {
     setCurrentMessage("");
   };
 
-  const saveResult = async (index: any, prompt: any) => {
-    console.log("-->>>>>", prompt);
+  const saveResult = async (index: any) => {
+  
+    const inputText = chats[index - 1].content;
+    const outputText = chats[index].content;
+    setIsTyping(true);
+    const data = await saveTune(inputText, outputText);
+    const x = [...chats];
+    x[index].isEdit = false;
+
+    setTimeout(() => {
+      setIsTyping(false);
+    }, 50);
+    setChats(x);
     // const data = await postMessage(prompt, theId??'');
     // console.log(data.data)
     // const msgs = chats;
@@ -83,10 +87,21 @@ const App: React.FC = () => {
     // scrollToBottom();
   };
   const editChat = (index: any) => {
-    console.log(chats[index]);
-    chats[index].isEdit = true;
-    setChats(chats);
+
+    const x = [...chats];
+    x[index].isEdit = true;
+    x[index].prevContent = x[index].content;
+    setChats(x);
   };
+
+  const cancelChat = (index: any) => {
+
+    const x = [...chats];
+    x[index].isEdit = false;
+    x[index].content = x[index].prevContent;
+    setChats(x);
+  };
+
   const chat = async (e: any, textPrompt: any) => {
     e.preventDefault();
 
@@ -102,7 +117,6 @@ const App: React.FC = () => {
 
     setMessage("");
     const data = await postMessage(textPrompt, theId ?? "");
-    console.log(data.data);
     msgs.push(data.data);
     setChats(msgs);
     settheId(data.data._id);
@@ -113,10 +127,8 @@ const App: React.FC = () => {
     setMessage("");
     scrollToBottom();
   };
-  // useEffect(() => {
-    
-  // }, [JSON.stringify(chats)])
-  
+
+  // console.log(chats);
   return (
     <Layout style={{ background: "transparent" }}>
       <Header
@@ -130,55 +142,142 @@ const App: React.FC = () => {
           alignItems: "center",
         }}
       >
-        <img src={logo} alt="logo" />
+        <img src={logoArc} alt="logo"   className="logo"/>
+        <h1 style={{ color: "#fff", marginLeft: "5px" }}>ARC </h1>
       </Header>
       <Content style={contentStyle}>
-        <div className={`chat-popup`}>
-          <div className="chat-wrapper">
-            <div className="chat-body">
-              <div className="chat-body-inner">
-                {chats && chats.length
-                  ? chats.map((chat: any, index: any) => (
-                      <div
-                        key={index}
-                        style={{ marginBottom: "10px" }}
-                        className={
-                          chat.role === "user" ? "user_msg" : "bot_msg"
-                        }
-                      >
-                        {chat.role === "user" ? (
-                          chat.content
-                        ) : (
-                          
-                            <div>
-                              {chat.isEdit ? (
-                                <input type="text" key={index}    onChange={(event) => {
-                                  console.log(event)
-                                }}
-                                value={chat.content}></input>
-                              ) : (
-                                <pre style={{ whiteSpace: "pre-wrap" }}>
-                                  {chat.content}
-                                </pre>
-                              )}
-                            
-                            
-                             
-                            
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  : ""}
-
-                <div className={isTyping ? "chat-typing" : "chat-typing hide"}>
-                  <div className="dot-flashing" />
-                </div>
-                <div ref={bottomEl} />
+        <Row>
+          <Col span={6}>
+            <div className={`chat-list`}>
+              <h1> List </h1>
+              <div>
+                
               </div>
             </div>
-          </div>
-        </div>
+          </Col>
+          <Col span={18}>
+            <div className={`chat-popup`}>
+              <div className="chat-wrapper">
+                <div className="chat-body">
+                  <div className="chat-body-inner">
+                    {chats && chats.length
+                      ? chats.map((chat: any, index: any) => (
+                          <div key={index} style={{ marginBottom: "10px" }} className={chat.role === "user" ? "user_msg" : "bot_msg"}>
+                            {chat.role === "user" ? (
+                              chat.content
+                            ) : (
+                              <div>
+                                {chat.isEdit ? (
+                                  <div style={{display:'flex'}}>
+                                   
+                                      <TextArea
+                                        style={{ height: 120, width: "100%", flex: "1 auto" }}
+                                        className="chat-textarea"
+                                        value={chat.content}
+                                        key={index}
+                                        onChange={(event) => {
+                                          const x = [...chats];
+                                          x[index].content = event.target.value;
+                                          setChats(x);
+                                        }}
+                                      />
+                                    
+                                    <Tooltip title="Cancel">
+                                      <Button
+                                        type="primary"
+                                        size="small"
+                                        danger
+                                        shape="circle"
+                                        onClick={() => {
+                                          cancelChat(index);
+                                        }}
+                                        icon={<ClearOutlined />}
+                                      />
+                                        </Tooltip>
+                                     
+                                     <Tooltip title="Save">
+                                      <Button
+                                        type="primary"
+                                        size="small"
+                                        shape="circle"
+                                        loading={isTyping}
+                                        onClick={() => {
+                                          saveResult(index);
+                                        }}
+                                        icon={<SaveOutlined />}
+                                      />
+                                      </Tooltip>
+
+                                       
+                                      
+                                    
+                                  </div>
+                                ) : (
+                                  
+                                  <div style={{ display: "flex",lineHeight:'18px' }}>
+                                    <pre style={{ whiteSpace: "pre-wrap", flex: "1 auto" }}><code>{chat.content}</code></pre>
+                                    <Tooltip title="Edit">
+                                      <Button
+                                        type="primary"
+                                        shape="circle"
+                                        icon={<EditOutlined />}
+                                        onClick={() => {
+                                          editChat(index);
+                                        }}
+                                      />
+                                    </Tooltip>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      : ""}
+
+                    <div className={isTyping ? "chat-typing" : "chat-typing hide"}>
+                      <div className="dot-flashing" />
+                    </div>
+                    <div ref={bottomEl} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="chat-message">
+              <div className="chat-message-left">
+                <div className="chat-logo">
+                  <img src={logo} alt="logo" className="rotate" />
+                </div>
+              </div>
+              <div className="chat-message-middle">
+                <form
+                  autoComplete="off"
+                  action=""
+                  onSubmit={(e) => {
+                    chat(e, message);
+                  }}
+                >
+                  <input
+                    type="text"
+                    name="message"
+                    autoComplete="off"
+                    value={message}
+                    placeholder="Hey there, type your question here..."
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                </form>
+              </div>
+              <div className="chat-message-right">
+                <Tooltip title="Send">
+                  <Button type="link" shape="circle" icon={<SendOutlined />} onClick={handleMessage} />
+                </Tooltip>
+                <Tooltip title="Clear">
+                  <Button type="link" shape="circle" icon={<ClearOutlined />} onClick={handleClear} />
+                </Tooltip>
+              </div>
+            </div>
+          </Col>
+        </Row>
+
         {/* <List
             style={{
               height: "80vh",
@@ -240,64 +339,6 @@ const App: React.FC = () => {
             )}
           /> */}
       </Content>
-      <Footer
-        style={{
-          backgroundColor: "transparent",
-          position: "fixed",
-          left: 0,
-          bottom: 0,
-          height: "12vh",
-          width: "100%",
-          justifyContent: "space-between",
-          textAlign: "center",
-        }}
-      >
-        <div></div>
-        <div className="chat-message">
-          <div className="chat-message-left">
-            <div className="chat-logo">
-              <img src={logo} alt="logo" className="rotate" />
-            </div>
-          </div>
-          <div className="chat-message-middle">
-            <form
-              autoComplete="off"
-              action=""
-              onSubmit={(e) => {
-                chat(e, message);
-              }}
-            >
-              <input
-                type="text"
-                name="message"
-                autoComplete="off"
-                value={message}
-                placeholder="Hey there, type your question here..."
-                onChange={(e) => setMessage(e.target.value)}
-              />
-            </form>
-          </div>
-          <div className="chat-message-right">
-            <Tooltip title="Send">
-              <Button
-                type="link"
-                shape="circle"
-                icon={<SendOutlined />}
-                onClick={handleMessage}
-              />
-            </Tooltip>
-            <Tooltip title="Clear">
-              <Button
-                type="link"
-                shape="circle"
-                icon={<ClearOutlined />}
-                onClick={handleClear}
-              />
-            </Tooltip>
-          </div>
-        </div>
-        <div></div>
-      </Footer>
     </Layout>
   );
 };

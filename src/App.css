@@ -6,6 +6,14 @@
   height: 40vmin;
   pointer-events: none;
 }
+.logo {
+   
+    background: #1c1c1c;
+    border-radius: 50%;
+    padding: 5px;
+    height: 40px;  
+  
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -27,13 +35,25 @@
 .App-link {
   color: #61dafb;
 }
+.chat-list {
+  
+  
 
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border: 1px solid rgb(68, 68, 73) !important;
+  border-radius: 24px;
+  line-height: 5px;
+  
+}
 .chat-popup {
   
   
 
-  height: calc(100vh - 200px);
+  height: calc(100vh - 230px);
   overflow-y: auto;
+  margin-left: 5px;
   margin-bottom: 15px;
   border: 1px solid rgb(68, 68, 73) !important;
   border-radius: 24px;
@@ -49,6 +69,7 @@
   border-radius: 24px;
   padding: 10px;
   margin-bottom: 5px;
+  margin-left: 5px;
 }
 
 .chat-message-left{
@@ -80,6 +101,7 @@
   outline: none;
 }
 
+ 
 .hide {
   visibility: hidden;
   display: none;
@@ -178,11 +200,12 @@
 }
 .chat-body-inner .user_msg{
  
-  
+  background-color: #1677ff;
     color: #fff;
   
-  max-width: 100%;
-  padding: 5px;
+    max-width: 100%;
+    padding: 10px;
+    border-radius: 20px;
   text-align: end;
 }
 .chat-body-inner .bot_msg{
@@ -232,5 +255,16 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+.rotate {
+  animation: rotation 8s infinite linear;
+}
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
   }
 }
