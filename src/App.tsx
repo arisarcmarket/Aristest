@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { Breadcrumb, Button, Layout, Menu, Tooltip, theme, List, Avatar, Skeleton, Card, Typography, Space, Row, Col, Table } from "antd";
+import { Breadcrumb, Button, Layout, Menu, Tooltip, theme, List, Avatar, Skeleton, Card, Typography, Space, Row, Col, Table, Collapse } from "antd";
 import { ClearOutlined, SendOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
 import logo from "./reactor.svg";
-import logoArc from './logo.png';
+import logoArc from "./logo.png";
 import axios from "axios";
 
 import TextArea from "antd/es/input/TextArea";
+const { Panel } = Collapse;
 const { Header, Content, Footer } = Layout;
 
 const url = "https://staging-api.arc.market/ws/v2/";
@@ -18,6 +19,12 @@ const contentStyle: React.CSSProperties = {
   color: "#fff",
   background: "transparent",
   padding: "30px",
+};
+
+const getTune = async () => {
+  // using axios
+  const response = await axios.get(`${url}ai/chat/list`);
+  return response.data;
 };
 
 const postMessage = async (message: string, id: string) => {
@@ -43,6 +50,7 @@ const App: React.FC = () => {
 
   const [data, setData] = useState<any>([]);
   const [chats, setChats] = useState<any>([]);
+  const [listTune, setlistTune] = useState<any>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [theId, settheId] = useState(null);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -53,6 +61,10 @@ const App: React.FC = () => {
     bottomEl?.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const getAllTune = async () => {
+    const data = await getTune();
+    setlistTune(data.data);
+  };
   const handleMessage = (e: any) => {
     chat(e, message);
   };
@@ -65,7 +77,6 @@ const App: React.FC = () => {
   };
 
   const saveResult = async (index: any) => {
-  
     const inputText = chats[index - 1].content;
     const outputText = chats[index].content;
     setIsTyping(true);
@@ -87,7 +98,6 @@ const App: React.FC = () => {
     // scrollToBottom();
   };
   const editChat = (index: any) => {
-
     const x = [...chats];
     x[index].isEdit = true;
     x[index].prevContent = x[index].content;
@@ -95,7 +105,6 @@ const App: React.FC = () => {
   };
 
   const cancelChat = (index: any) => {
-
     const x = [...chats];
     x[index].isEdit = false;
     x[index].content = x[index].prevContent;
@@ -128,6 +137,9 @@ const App: React.FC = () => {
     scrollToBottom();
   };
 
+  useEffect(() => {
+    getAllTune();
+  }, [JSON.stringify(chats)]);
   // console.log(chats);
   return (
     <Layout style={{ background: "transparent" }}>
@@ -142,16 +154,24 @@ const App: React.FC = () => {
           alignItems: "center",
         }}
       >
-        <img src={logoArc} alt="logo"   className="logo"/>
+        <img src={logoArc} alt="logo" className="logo" />
         <h1 style={{ color: "#fff", marginLeft: "5px" }}>ARC </h1>
       </Header>
       <Content style={contentStyle}>
         <Row>
           <Col span={6}>
             <div className={`chat-list`}>
-              <h1> List </h1>
-              <div>
-                
+              <h1> List {listTune.length || 0} </h1>
+              <hr />
+              <br />
+              <div style={{padding:'5px'}}>
+                <Collapse>
+                  {listTune.map((item: any) => (
+                    <Panel header={item.input_text} key={item._id} >
+                      {item.output_text}
+                    </Panel>
+                  ))}
+                </Collapse>
               </div>
             </div>
           </Col>
@@ -168,20 +188,19 @@ const App: React.FC = () => {
                             ) : (
                               <div>
                                 {chat.isEdit ? (
-                                  <div style={{display:'flex'}}>
-                                   
-                                      <TextArea
-                                        style={{ height: 120, width: "100%", flex: "1 auto" }}
-                                        className="chat-textarea"
-                                        value={chat.content}
-                                        key={index}
-                                        onChange={(event) => {
-                                          const x = [...chats];
-                                          x[index].content = event.target.value;
-                                          setChats(x);
-                                        }}
-                                      />
-                                    
+                                  <div style={{ display: "flex" }}>
+                                    <TextArea
+                                      style={{ height: 120, width: "100%", flex: "1 auto" }}
+                                      className="chat-textarea"
+                                      value={chat.content}
+                                      key={index}
+                                      onChange={(event) => {
+                                        const x = [...chats];
+                                        x[index].content = event.target.value;
+                                        setChats(x);
+                                      }}
+                                    />
+
                                     <Tooltip title="Cancel">
                                       <Button
                                         type="primary"
@@ -193,9 +212,9 @@ const App: React.FC = () => {
                                         }}
                                         icon={<ClearOutlined />}
                                       />
-                                        </Tooltip>
-                                     
-                                     <Tooltip title="Save">
+                                    </Tooltip>
+
+                                    <Tooltip title="Save">
                                       <Button
                                         type="primary"
                                         size="small"
@@ -206,16 +225,13 @@ const App: React.FC = () => {
                                         }}
                                         icon={<SaveOutlined />}
                                       />
-                                      </Tooltip>
-
-                                       
-                                      
-                                    
+                                    </Tooltip>
                                   </div>
                                 ) : (
-                                  
-                                  <div style={{ display: "flex",lineHeight:'18px' }}>
-                                    <pre style={{ whiteSpace: "pre-wrap", flex: "1 auto" }}><code>{chat.content}</code></pre>
+                                  <div style={{ display: "flex", lineHeight: "18px" }}>
+                                    <pre style={{ whiteSpace: "pre-wrap", flex: "1 auto" }}>
+                                      <code>{chat.content}</code>
+                                    </pre>
                                     <Tooltip title="Edit">
                                       <Button
                                         type="primary"

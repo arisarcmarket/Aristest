@@ -268,3 +268,11 @@
     transform: rotate(359deg);
   }
 }
+.ant-collapse-header {
+  color: #fff !important;
+  text-align: left !important;
+}
+.ant-collapse-content {
+  text-align: left !important;
+  border-top: none !important;
+}
