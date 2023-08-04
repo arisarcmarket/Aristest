@@ -203,9 +203,9 @@
   background-color: #1677ff;
     color: #fff;
   
-    max-width: 100%;
-    padding: 10px;
-    border-radius: 20px;
+   max-width: 100%;
+  padding: 10px;
+  border-radius: 20px;
   text-align: end;
 }
 .chat-body-inner .bot_msg{
