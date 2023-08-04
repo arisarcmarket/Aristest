@@ -168,7 +168,9 @@ const App: React.FC = () => {
                 <Collapse>
                   {listTune.map((item: any) => (
                     <Panel header={item.input_text} key={item._id} >
-                      {item.output_text}
+                      <pre style={{ whiteSpace: "pre-wrap", flex: "1 auto" }}>
+                        <code>{item.output_text}</code>
+                      </pre>
                     </Panel>
                   ))}
                 </Collapse>
